@@ -12,7 +12,7 @@ const app = express();
 // }));
 
 const corsOptions = {
-    origin: 'https://workify-frontend-8xrbbtvoy-ankit1390023s-projects.vercel.app/',
+    origin: 'https://workify-frontend.vercel.app/',
     credentials: true
 }
 app.use(cors(corsOptions));
