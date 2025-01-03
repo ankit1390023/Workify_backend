@@ -13,11 +13,22 @@ const app = express();
 
 
 
-const corsOptions = {
-    origin: 'https://workify-frontend.vercel.app',
-    credentials: true,
-};
-app.use(cors(corsOptions));
+
+const allowedOrigins = [
+    'http://localhost:5173', // For local development
+    'https://workify-frontend.vercel.app' // For production
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // If using cookies or credentials
+}));
 
 
 
