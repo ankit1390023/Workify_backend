@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import getDataUri from "../utils.js/dataURI.utils.js";
 import cloudinary from "../utils.js/file.cloudinary.utils.js";
-
+import axios from "axios";
 
 const generateAcessTokenAndRefreshToken = async (userId) => {
     try {
@@ -245,7 +245,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     try {
         const { fullName, email, phoneNumber, bio, skills } = req.body;
         const file = req.file;
-
+        console.log("file received from updateAccountDetails: " + file,email,phoneNumber,bio,skills); 
         // Process skills
         let skillsArray = [];
         if (skills) {
@@ -281,6 +281,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
             });
             // Update user profile with resume details
             user.profile.resume = cloudResponse.secure_url;
+            console.log("user.profile.resume", user.profile.resume);
             user.profile.resumeOriginalName = file.originalname;
         }
         // Save updated user details to the database
@@ -307,8 +308,59 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         });
     }
 });
+const AI = asyncHandler(async (req, res) => {
+    console.log("Backend is working!");
 
-export {
+    try {
+        const userMessage = req.body.message;
+
+        if (!userMessage || typeof userMessage !== 'string') {
+            return res.status(400).json({ error: 'Valid message is required' });
+        }
+
+        // Constructing the request payload for the Gemini API
+        const payload = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: userMessage,
+                        },
+                    ],
+                },
+            ],
+        };
+
+        // Call the Gemini API
+        const response = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            payload,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        // Extracting the bot's reply from the Gemini API response
+        const botReply = response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+            'Sorry, I couldn\'t generate a reply. Please try again later.';
+
+        console.log('Bot Reply:', botReply);
+
+        return res.json({ reply: botReply });
+    } catch (error) {
+        console.error('Error during API request:', error.response?.data || error.message);
+
+        // Respond with an error message if something goes wrong
+        return res
+            .status(500)
+            .json({ error: 'Something went wrong with the chat request.' });
+    }
+});
+export
+{
+    AI,
     registerUser,
     loginUser,
     logOut,

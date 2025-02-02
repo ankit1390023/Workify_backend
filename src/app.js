@@ -5,12 +5,6 @@ import cookieParser from 'cookie-parser';
 const app = express();
 
 
-// app.use(cors({
-//     origin: '*', // Allow requests from any origin
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-//     credentials: false, // Do not allow credentials (e.g., cookies) since `*` is used
-// }));
-
 
 
 
@@ -28,6 +22,8 @@ app.use(cors({
         }
     },
     credentials: true, // If using cookies or credentials
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Explicitly allow required methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow necessary headers
 }));
 
 

@@ -13,7 +13,7 @@ const verifyJwt = asyncHandler(async (req, res, next) => {
      1. withCredential=true krte h to req.cookies ke ander accessToken aega 
      2. ydi headers ke ander token pass krte h ex:  'Authorization': `Bearer ${token}` 
    */}
-    
+
     if (!token) {
         throw new apiError(401, "ACCESS DENIED: NO TOKEN PROVIDED");
     }
