@@ -1,32 +1,32 @@
-import express, { application, urlencoded } from 'express';
+import express, { urlencoded } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 const app = express();
 
-
-
-
-
 const allowedOrigins = [
-    'http://localhost:5173', // For local development
-    // 'https://workify-frontend.vercel.app' // For production
+    "http://localhost:5173", // Local development
+    "https://workify-frontend.vercel.app" // Production frontend
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        if (allowedOrigins.includes(origin) || !origin) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error("Not allowed by CORS"));
         }
     },
-    credentials: true, // If using cookies or credentials
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Explicitly allow required methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow necessary headers
+    credentials: true, // ✅ Required for cookies
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"], // ✅ Add required headers
 }));
 
-
+// ✅ Explicitly allow credentials in headers
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Credentials", "true");
+    next();
+});
 
 app.use(express.json({ limit: "16kb" }));
 app.use(urlencoded({ extended: true, limit: "16kb" }));
@@ -38,9 +38,11 @@ import userRouter from './routes/user.route.js';
 import companyRouter from './routes/company.route.js';
 import jobRouter from './routes/job.route.js';
 import applicationRouter from './routes/application.route.js';
+
 // Route declarations
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/company', companyRouter);
 app.use('/api/v1/job', jobRouter);
 app.use('/api/v1/application', applicationRouter);
+
 export { app };

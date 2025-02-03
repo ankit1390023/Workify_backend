@@ -114,25 +114,25 @@ const loginUser = asyncHandler(async (req, res) => {
         )
 });
 const logOut = asyncHandler(async (req, res) => {
-    //remove data from database
+    // Remove token from database
     await User.findByIdAndUpdate(
         req.user._id,
-        { $unset: { accessToken: 1 } },  //$unset remove the refrehToken field entirely from document
+        { $unset: { accessToken: 1 } }, // Removes the accessToken field
         { new: true }
     );
 
-    //remove data fromcookies
-    const options = {
-        httpOnly: true, // Prevents client-side access to the cookie
-        secure: true, // Use secure cookies in production
-    }
-    return res
-        .status(200)
-        .clearCookie("accessToken", options)
-        .json(
-            new apiResponse(200, {}, "user LogOut Successfully")
-        )
-})
+    // Remove token from cookies
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // ✅ Secure only in production
+        sameSite: "None", // ✅ Required for cross-origin requests
+    });
+
+    return res.status(200).json(
+        new apiResponse(200, {}, "User logged out successfully")
+    );
+});
+
 const refreshToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
