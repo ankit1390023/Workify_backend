@@ -117,7 +117,7 @@ const logOut = asyncHandler(async (req, res) => {
     //remove data from database
     await User.findByIdAndUpdate(
         req.user._id,
-        { $unset: { refreshToken: 1 } },  //$unset remove the refrehToken field entirely from document
+        { $unset: { accessToken: 1 } },  //$unset remove the refrehToken field entirely from document
         { new: true }
     );
 
@@ -128,8 +128,7 @@ const logOut = asyncHandler(async (req, res) => {
     }
     return res
         .status(200)
-        .clearCookie("accesstoken", options)
-        .clearCookie("refreshToken", options)
+        .clearCookie("accessToken", options)
         .json(
             new apiResponse(200, {}, "user LogOut Successfully")
         )
