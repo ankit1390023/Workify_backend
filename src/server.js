@@ -15,5 +15,5 @@ connectDB()
     })
 
 app.get("/", (req,res) => {
-    res.send("welcom");
+    res.send("welcome")
 });
