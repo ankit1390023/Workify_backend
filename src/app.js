@@ -5,8 +5,9 @@ import cookieParser from 'cookie-parser';
 const app = express();
 
 const allowedOrigins = [
-    "http://localhost:5173", // Local development
-    // "https://workify-frontend.vercel.app" // Production frontend
+
+    "https://workify-frontend.vercel.app", // Production frontend
+     "http://localhost:5173", // Local development
 ];
 
 app.use(cors({
