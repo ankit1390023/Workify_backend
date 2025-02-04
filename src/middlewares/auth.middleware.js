@@ -6,8 +6,9 @@ import { asyncHandler } from "../utils.js/asyncHandler.utils.js";
 
 const verifyJwt = asyncHandler(async (req, res, next) => {
     // Extract token from cookies or Authorization header
-    const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1];
-    console.log("token from frontend", req.cookies)
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.accessToken;
+    // console.log("token from frontend", req.headers.authorization)
+    // console.log("token from frontend", req.cookies)
     if (!token) {
         throw new apiError(401, "ACCESS DENIED: NO TOKEN PROVIDED");
     }

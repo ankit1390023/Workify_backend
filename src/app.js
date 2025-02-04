@@ -6,7 +6,7 @@ const app = express();
 
 const allowedOrigins = [
     "http://localhost:5173", // Local development
-    "https://workify-frontend.vercel.app" // Production frontend
+    // "https://workify-frontend.vercel.app" // Production frontend
 ];
 
 app.use(cors({
