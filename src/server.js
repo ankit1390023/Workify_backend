@@ -15,5 +15,5 @@ connectDB()
     })
 
 app.get("/", (req,res) => {
-    res.send("welcome")
+    res.send("To check your code is deployed successfull or not");
 });
