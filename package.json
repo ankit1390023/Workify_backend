@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
-  "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/server.js",
-    "start": "node src/server.js"
-  },
+ "scripts": {
+  "dev": "nodemon -r dotenv/config --experimental-json-modules src/server.js",
+  "start": "node src/server.js"
+},
   "author": "Ankit Srivastav",
   "license": "ISC",
   "description": "This is a college project backend started on 24-10-2024",
