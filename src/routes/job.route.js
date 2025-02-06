@@ -6,5 +6,5 @@ const router = Router();
 router.route('/post').post(verifyJwt, postJob);
 router.route('/allJobs').get(getAllJobs);
 router.route('/getJobById/:id').get(getJobById);
-router.route('/getJobByAdmin').get(getJobsByAdmin);
+router.route('/getJobByAdmin').get(verifyJwt,getJobsByAdmin);
 export default router;
