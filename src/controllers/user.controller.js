@@ -241,10 +241,11 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         )
 })
 const updateAccountDetails = asyncHandler(async (req, res) => {
+    console.log("Im from updateAccountDetails");
     try {
         const { fullName, email, phoneNumber, bio, skills } = req.body;
         const file = req.file;
-        console.log("file received from updateAccountDetails: " + file,email,phoneNumber,bio,skills); 
+        console.log("file received from updateAccountDetails: " + fullName,file,email,phoneNumber,bio,skills); 
         // Process skills
         let skillsArray = [];
         if (skills) {

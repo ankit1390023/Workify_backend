@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 const app = express();
 
 const allowedOrigins = [
-    "https://workify-frontend.vercel.app",// Production frontend
+    // "https://workify-frontend.vercel.app",// Production frontend
     "http://localhost:5173", // Local development
     
 ];
@@ -19,7 +19,7 @@ app.use(cors({
         }
     },
     credentials: true, // ✅ Required for cookies
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"], // ✅ Add required headers
 }));
 

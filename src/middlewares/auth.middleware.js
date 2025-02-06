@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils.js/asyncHandler.utils.js";
 
 
 const verifyJwt = asyncHandler(async (req, res, next) => {
+    console.log("I'm from verifyHJwt");
     // Extract token from cookies or Authorization header
     const token = req.headers.authorization?.split(' ')[1] || req.cookies?.accessToken;
     console.log("token from frontend", req.headers.authorization?.split(' ')[1])
