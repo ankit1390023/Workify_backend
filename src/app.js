@@ -7,7 +7,7 @@ const app = express();
 const allowedOrigins = [
     "https://workify-frontend.vercel.app",// Production frontend
     "http://localhost:5173", // Local development
-    
+
 ];
 
 app.use(cors({
@@ -19,7 +19,7 @@ app.use(cors({
         }
     },
     credentials: true, // ✅ Required for cookies
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"], // ✅ Add required headers
 }));
 
@@ -39,11 +39,13 @@ import userRouter from './routes/user.route.js';
 import companyRouter from './routes/company.route.js';
 import jobRouter from './routes/job.route.js';
 import applicationRouter from './routes/application.route.js';
+import dashboardRouter from './routes/dashboard.route.js';
 
 // Route declarations
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/company', companyRouter);
 app.use('/api/v1/job', jobRouter);
 app.use('/api/v1/application', applicationRouter);
+app.use('/api/v1/dashboard', dashboardRouter);
 
 export { app };

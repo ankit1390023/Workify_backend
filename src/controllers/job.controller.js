@@ -64,7 +64,7 @@ const getJobById = asyncHandler(async (req, res) => {
         throw new apiError(400, "Invalid Job ID");
     }
 
-    const job = await Job.findById(jobId).populate({ path: "company" }).populate({ path: "applications"});
+    const job = await Job.findById(jobId).populate({ path: "company" }).populate({ path: "applications" });
     if (!job) {
         throw new apiError(404, "Job not found");
     }
@@ -88,9 +88,50 @@ const getJobsByAdmin = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new apiResponse(200, jobs, "Jobs Retrieved Successfully"));
 });
+const updateJob = asyncHandler(async (req, res) => {
+    const jobId = req.params.id;
+    const { title, description, requirements, salary, location, jobType, position, companyId, experience } = req.body;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new apiError(400, "Invalid Job ID");
+    }
+
+    // Validate companyId if provided
+    if (companyId) {
+        const company = await Company.findById(companyId);
+        if (!company) {
+            throw new apiError(404, "Company not found");
+        }
+    }
+
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (requirements) updateData.requirements = requirements.split(",").map(req => req.trim());
+    if (salary) updateData.salary = Number(salary);
+    if (location) updateData.location = Array.isArray(location) ? location : location.split(",").map(loc => loc.trim());
+    if (jobType) updateData.jobType = jobType;
+    if (experience) updateData.experience = experience;
+    if (position) updateData.position = position;
+    if (companyId) updateData.company = companyId;
+
+    const updatedJob = await Job.findByIdAndUpdate(
+        jobId,
+        { $set: updateData },
+        { new: true }
+    ).populate({ path: "company" });
+
+    if (!updatedJob) {
+        throw new apiError(404, "Job not found");
+    }
+
+    return res.status(200).json(new apiResponse(200, updatedJob, "Job updated successfully"));
+});
 export {
     postJob,
     getAllJobs,
     getJobById,
-    getJobsByAdmin
+    getJobsByAdmin,
+    updateJob
 };

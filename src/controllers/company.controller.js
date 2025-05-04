@@ -9,7 +9,7 @@ import { uploadOnCloudinary } from "../utils.js/cloudinary.utils.js";
 const registerCompany = asyncHandler(async (req, res) => {
     const { companyName, location, website, description } = req.body;
 
-    
+
     if (!companyName) {
         throw new apiError(404, "companyName is required");
     }
@@ -35,17 +35,11 @@ const registerCompany = asyncHandler(async (req, res) => {
         )
 });
 const getCompany = asyncHandler(async (req, res) => {
-    // console.log("this is getCompany", req.user._id);
-    const company = await Company.find({ userId: req.user?._id });
-    // console.log(company);
-    // Check if the company was found
-    if (!company) {
-        throw new apiError(404, "Company not found");
-    }
+    const companies = await Company.find({ userId: req.user?._id });
 
-    // Send response with company details
+    // Return empty array if no companies found, instead of throwing an error
     return res.status(200).json(
-        new apiResponse(200, company, "Company found successfully")
+        new apiResponse(200, companies || [], "Companies retrieved successfully")
     );
 });
 
@@ -63,20 +57,29 @@ const getCompanyById = asyncHandler(async (req, res) => {
 const updateCompany = asyncHandler(async (req, res) => {
     const { companyName, description, website, location } = req.body;
 
-    const logoLocalFilePath = req.file?.path;
-    const logo = await uploadOnCloudinary(logoLocalFilePath);
+    const logoLocalFilePath = req.files?.logo?.[0]?.path;
+    let logo;
+    if (logoLocalFilePath) {
+        logo = await uploadOnCloudinary(logoLocalFilePath);
+    }
 
     const updateData = {};
     if (companyName) updateData.companyName = companyName;
     if (description) updateData.description = description;
     if (website) updateData.website = website;
     if (location) updateData.location = location;
-    if (logo) updateData.logo = logo?.secure_url;
+    if (logo) updateData.logo = logo.secure_url;
 
-    let company = await Company.findByIdAndUpdate(req.params.id,{"$set":updateData}, { new: true });
+    let company = await Company.findByIdAndUpdate(
+        req.params.id,
+        { $set: updateData },
+        { new: true }
+    );
+
     if (!company) {
         throw new apiError(404, "Company not found");
     }
+
     return res.status(200).json(
         new apiResponse(200, company, "Company details updated successfully")
     );

@@ -8,6 +8,8 @@ import bcrypt from 'bcrypt';
 import getDataUri from "../utils.js/dataURI.utils.js";
 import cloudinary from "../utils.js/file.cloudinary.utils.js";
 import axios from "axios";
+import path from 'path';
+import { Application } from "../models/application.model.js";
 
 const generateAcessTokenAndRefreshToken = async (userId) => {
     try {
@@ -245,7 +247,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     try {
         const { fullName, email, phoneNumber, bio, skills } = req.body;
         const file = req.file;
-        console.log("file received from updateAccountDetails: " + fullName,file,email,phoneNumber,bio,skills); 
+        console.log("file received from updateAccountDetails: " + fullName, file, email, phoneNumber, bio, skills);
         // Process skills
         let skillsArray = [];
         if (skills) {
@@ -277,7 +279,11 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
             const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
                 resource_type: 'raw',
                 folder: 'resumes',
-                flags: 'attachment:false',
+                flags: 'attachment:true',
+                format: path.extname(file.originalname).slice(1),
+                use_filename: true,
+                unique_filename: false,
+                filename_override: file.originalname
             });
             // Update user profile with resume details
             user.profile.resume = cloudResponse.secure_url;
@@ -358,8 +364,8 @@ const AI = asyncHandler(async (req, res) => {
             .json({ error: 'Something went wrong with the chat request.' });
     }
 });
-export
-{
+
+export {
     AI,
     registerUser,
     loginUser,
@@ -369,5 +375,6 @@ export
     getCurrentUser,
     updateAvatar,
     updateUserCoverImage,
-    updateAccountDetails
+    updateAccountDetails,
+
 };
