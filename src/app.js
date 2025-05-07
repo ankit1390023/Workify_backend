@@ -41,11 +41,13 @@ import jobRouter from './routes/job.route.js';
 import applicationRouter from './routes/application.route.js';
 import dashboardRouter from './routes/dashboard.route.js';
 
+
 // Route declarations
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/company', companyRouter);
 app.use('/api/v1/job', jobRouter);
 app.use('/api/v1/application', applicationRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
+
 
 export { app };
