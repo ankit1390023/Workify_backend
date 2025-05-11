@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { verifyJwt } from '../middlewares/auth.middleware.js';
+import { verifyJWT } from '../middlewares/auth.middleware.js';
 import { getUserStats, getApplicationTrends, getUserSkills, getGlobalStats } from '../controllers/dashboard.controller.js';
 
 const router = Router();
 
 // Protected routes
-router.route('/stats').get(verifyJwt, getUserStats);
-router.route('/trends').get(verifyJwt, getApplicationTrends);
-router.route('/skills').get(verifyJwt, getUserSkills);
-router.route('/global-stats').get(verifyJwt, getGlobalStats);
+router.route('/stats').get(verifyJWT, getUserStats);
+router.route('/trends').get(verifyJWT, getApplicationTrends);
+router.route('/skills').get(verifyJWT, getUserSkills);
+router.route('/global-stats').get(verifyJWT, getGlobalStats);
 
 export default router; 

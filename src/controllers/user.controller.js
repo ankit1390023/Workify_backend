@@ -10,6 +10,9 @@ import cloudinary from "../utils.js/file.cloudinary.utils.js";
 import axios from "axios";
 import path from 'path';
 import { Application } from "../models/application.model.js";
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
+
 
 const generateAcessTokenAndRefreshToken = async (userId) => {
     try {
@@ -364,6 +367,138 @@ const AI = asyncHandler(async (req, res) => {
             .json({ error: 'Something went wrong with the chat request.' });
     }
 });
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new apiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new apiError(404, "User not found");
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    // Save reset token to user
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpiry = resetTokenExpiry;
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset URL with query parameter
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+    // Create email transporter with more detailed configuration
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD
+        },
+        tls: {
+            rejectUnauthorized: false // Only use this in development
+        }
+    });
+
+    // Email content with better formatting
+    const mailOptions = {
+        from: `"Workify Support" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Password Reset Request - Workify',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #2563eb;">Password Reset Request</h2>
+                <p>Hello ${user.fullName},</p>
+                <p>We received a request to reset your password. Click the button below to reset your password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${resetUrl}" 
+                       style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Reset Password
+                    </a>
+                </div>
+                <p style="color: #666; font-size: 14px;">This link will expire in 10 minutes.</p>
+                <p style="color: #666; font-size: 14px;">If you didn't request this, please ignore this email.</p>
+                <hr style="border: 1px solid #eee; margin: 20px 0;">
+                <p style="color: #666; font-size: 12px;">This is an automated email, please do not reply.</p>
+            </div>
+        `
+    };
+
+    try {
+        // Verify transporter configuration
+        await transporter.verify();
+
+        // Send email
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent:', info.messageId);
+
+        return res.status(200).json(
+            new apiResponse(200, {}, "Password reset email sent successfully")
+        );
+    } catch (error) {
+        console.error('Email error:', error);
+
+        // Clear reset token on error
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpiry = undefined;
+        await user.save({ validateBeforeSave: false });
+
+        throw new apiError(500, "Error sending email. Please try again later.");
+    }
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+        throw new apiError(400, "Token and new password are required");
+    }
+
+    const user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new apiError(400, "Invalid or expired reset token");
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiry = undefined;
+    await user.save();
+
+    return res.status(200).json(
+        new apiResponse(200, {}, "Password reset successful")
+    );
+});
+
+const validateResetToken = asyncHandler(async (req, res) => {
+    const { token } = req.query;
+
+    if (!token) {
+        throw new apiError(400, "Token is required");
+    }
+
+    const user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new apiError(400, "Invalid or expired reset token");
+    }
+
+    return res.status(200).json(
+        new apiResponse(200, { valid: true }, "Token is valid")
+    );
+});
 
 export {
     AI,
@@ -376,5 +511,7 @@ export {
     updateAvatar,
     updateUserCoverImage,
     updateAccountDetails,
-
+    forgotPassword,
+    resetPassword,
+    validateResetToken
 };

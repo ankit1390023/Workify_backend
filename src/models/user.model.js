@@ -43,15 +43,15 @@ const userSchema = new mongoose.Schema({
         },
         skills: [{ type: String }],
         resume: {
-            type: String ,
-            default:""
+            type: String,
+            default: ""
         },
         resumeOriginalName: { type: String },
         company: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Company'
         },
-        avatar:{
+        avatar: {
             type: String,
             default: ""
         },
@@ -62,6 +62,12 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken: {
         type: String,
+    },
+    resetPasswordToken: {
+        type: String,
+    },
+    resetPasswordExpiry: {
+        type: Date,
     }
 })
 

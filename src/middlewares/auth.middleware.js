@@ -4,7 +4,7 @@ import { apiError } from "../utils.js/apiError.utils.js";
 import { asyncHandler } from "../utils.js/asyncHandler.utils.js";
 
 
-const verifyJwt = asyncHandler(async (req, res, next) => {
+export const verifyJWT = asyncHandler(async (req, res, next) => {
     console.log("I'm from verifyHJwt");
     // Extract token from cookies or Authorization header
     const token = req.headers.authorization?.split(' ')[1] || req.cookies?.accessToken;
@@ -33,4 +33,3 @@ const verifyJwt = asyncHandler(async (req, res, next) => {
     next();
 });
 
-export { verifyJwt };
