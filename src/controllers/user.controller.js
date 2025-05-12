@@ -138,7 +138,6 @@ const logOut = asyncHandler(async (req, res) => {
         new apiResponse(200, {}, "User logged out successfully")
     );
 });
-
 const refreshToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
@@ -287,11 +286,33 @@ const deleteUserCoverImage = asyncHandler(async (req, res) => {
     }
 });
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    console.log("Im from updateAccountDetails");
     try {
-        const { fullName, email, phoneNumber, bio, skills } = req.body;
+        const {
+            fullName,
+            email,
+            phoneNumber,
+            bio,
+            skills,
+            location,
+            education,
+            experience,
+            languages,
+            certifications,
+            socialLinks,
+            interests,
+            preferredJobTypes,
+            expectedSalary
+        } = req.body;
         const file = req.file;
-        console.log("file received from updateAccountDetails: " + fullName, file, email, phoneNumber, bio, skills);
+
+        // Validate file type if present
+        if (file) {
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.mimetype)) {
+                throw new apiError(400, "Invalid file type. Please upload a PDF or Word document.");
+            }
+        }
+
         // Process skills
         let skillsArray = [];
         if (skills) {
@@ -304,57 +325,66 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         // Find user in the database
         let user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({
-                message: "User not found.",
-                success: false,
-            });
+            throw new apiError(404, "User not found.");
         }
 
-        // Update fields
+        // Update basic fields
         if (fullName) user.fullName = fullName;
         if (email) user.email = email;
         if (phoneNumber) user.phoneNumber = phoneNumber;
         if (bio) user.profile.bio = bio;
         if (skills) user.profile.skills = skillsArray;
 
+        // Safely parse and update complex fields
+        try {
+            if (location) user.profile.location = JSON.parse(location);
+            if (education) user.profile.education = JSON.parse(education);
+            if (experience) user.profile.experience = JSON.parse(experience);
+            if (languages) user.profile.languages = JSON.parse(languages);
+            if (certifications) user.profile.certifications = JSON.parse(certifications);
+            if (socialLinks) user.profile.socialLinks = JSON.parse(socialLinks);
+            if (interests) user.profile.interests = JSON.parse(interests);
+            if (preferredJobTypes) user.profile.preferredJobTypes = JSON.parse(preferredJobTypes);
+            if (expectedSalary) user.profile.expectedSalary = JSON.parse(expectedSalary);
+        } catch (parseError) {
+            throw new apiError(400, "Invalid JSON data in one or more fields.");
+        }
+
         // Handle file upload for resume
         if (file) {
-            const fileUri = getDataUri(file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-                resource_type: 'raw',
-                folder: 'resumes',
-                flags: 'attachment:true',
-                format: path.extname(file.originalname).slice(1),
-                use_filename: true,
-                unique_filename: false,
-                filename_override: file.originalname
-            });
-            // Update user profile with resume details
-            user.profile.resume = cloudResponse.secure_url;
-            console.log("user.profile.resume", user.profile.resume);
-            user.profile.resumeOriginalName = file.originalname;
+            try {
+                const fileUri = getDataUri(file);
+                const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                    resource_type: 'raw',
+                    folder: 'resumes',
+                    flags: 'attachment:true',
+                    format: path.extname(file.originalname).slice(1),
+                    use_filename: true,
+                    unique_filename: false,
+                    filename_override: file.originalname
+                });
+                user.profile.resume = cloudResponse.secure_url;
+                user.profile.resumeOriginalName = file.originalname;
+            } catch (uploadError) {
+                throw new apiError(500, "Error uploading resume to cloud storage.");
+            }
         }
-        // Save updated user details to the database
-        await user.save();
-        // Send response
+
+        // Save updated user details to the database with validateBeforeSave: false to skip password validation
+        await user.save({ validateBeforeSave: false });
+
+        // Return success response
         return res.status(200).json({
-            message: "Profile updated successfully.",
-            user: {
-                _id: user._id,
-                fullName: user.fullName,
-                email: user.email,
-                phoneNumber: user.phoneNumber,
-                role: user.role,
-                profile: user.profile,
-            },
             success: true,
+            message: "Profile updated successfully",
+            user: user
         });
+
     } catch (error) {
-        console.error("Error updating profile:", error);
-        return res.status(500).json({
-            message: "An error occurred while updating the profile.",
+        console.error("Error in updateAccountDetails:", error);
+        return res.status(error.statusCode || 500).json({
             success: false,
-            error: error.message,
+            message: error.message || "Error updating profile"
         });
     }
 });
@@ -492,7 +522,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
         throw new apiError(500, "Error sending email. Please try again later.");
     }
 });
-
 const resetPassword = asyncHandler(async (req, res) => {
     const { token, newPassword } = req.body;
 
@@ -519,7 +548,6 @@ const resetPassword = asyncHandler(async (req, res) => {
         new apiResponse(200, {}, "Password reset successful")
     );
 });
-
 const validateResetToken = asyncHandler(async (req, res) => {
     const { token } = req.query;
 
@@ -540,7 +568,6 @@ const validateResetToken = asyncHandler(async (req, res) => {
         new apiResponse(200, { valid: true }, "Token is valid")
     );
 });
-
 export {
     AI,
     registerUser,
