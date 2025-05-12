@@ -13,7 +13,8 @@ import {
     AI,
     forgotPassword,
     resetPassword,
-    validateResetToken
+    validateResetToken,
+    deleteUserCoverImage
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -55,6 +56,7 @@ router.post("/change-password", verifyJWT, changePassword);
 router.get("/current-user", verifyJWT, getCurrentUser);
 router.patch("/update-avatar", verifyJWT, upload.single("avatar"), updateAvatar);
 router.patch("/update-cover-image", verifyJWT, upload.single("coverImage"), updateUserCoverImage);
+router.delete("/delete-cover-image", verifyJWT, deleteUserCoverImage);
 router.patch("/update-account", verifyJWT, upload.single("resume"), updateAccountDetails);
 
 // AI route

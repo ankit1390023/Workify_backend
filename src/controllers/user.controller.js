@@ -12,6 +12,7 @@ import path from 'path';
 import { Application } from "../models/application.model.js";
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
 
 
 const generateAcessTokenAndRefreshToken = async (userId) => {
@@ -220,31 +221,71 @@ const updateAvatar = asyncHandler(async (req, res) => {
         )
 })
 const updateUserCoverImage = asyncHandler(async (req, res) => {
-    // console.log(req.file);
-    const coverImageLocalPath = req.file?.path; //it is from multer
-    // console.log("cover Image Local Path is --", coverImageLocalPath);
+    const coverImageLocalPath = req.file?.path;
+
     if (!coverImageLocalPath) {
-        throw new apiError(400, "CoverImage File Is Missing");
+        throw new apiError(400, "Cover image file is missing");
     }
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-    if (!coverImage.url) {
-        throw new apiError(401, "Error while uploading coverImage file on cloudinary");
+
+    try {
+        const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+        if (!coverImage.url) {
+            throw new apiError(401, "Error while uploading cover image to cloudinary");
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,
+            {
+                $set: {
+                    "profile.coverImage": coverImage.url
+                }
+            },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            throw new apiError(404, "User not found");
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Cover image updated successfully",
+            data: user
+        });
+    } catch (error) {
+        // Clean up the local file if it exists
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+        throw error;
     }
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
-        {
-            $set: {
-                coverImage: coverImage.url,
-            }
-        },
-        { new: true }
-    ).select('-password');
-    return res
-        .status(200)
-        .json(
-            new apiResponse(200, user, "User CoverImage Updated Succesfully")
-        )
-})
+});
+const deleteUserCoverImage = asyncHandler(async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,
+            {
+                $set: {
+                    "profile.coverImage": ""
+                }
+            },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            throw new apiError(404, "User not found");
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Cover image removed successfully",
+            data: user
+        });
+    } catch (error) {
+        throw error;
+    }
+});
 const updateAccountDetails = asyncHandler(async (req, res) => {
     console.log("Im from updateAccountDetails");
     try {
@@ -510,6 +551,7 @@ export {
     getCurrentUser,
     updateAvatar,
     updateUserCoverImage,
+    deleteUserCoverImage,
     updateAccountDetails,
     forgotPassword,
     resetPassword,

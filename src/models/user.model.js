@@ -58,6 +58,59 @@ const userSchema = new mongoose.Schema({
         coverImage: {
             type: String,
             default: ""
+        },
+        // New fields for students
+        location: {
+            city: { type: String, default: "" },
+            country: { type: String, default: "" },
+            address: { type: String, default: "" }
+        },
+        education: [{
+            institution: { type: String },
+            degree: { type: String },
+            fieldOfStudy: { type: String },
+            startDate: { type: Date },
+            endDate: { type: Date },
+            current: { type: Boolean, default: false },
+            description: { type: String }
+        }],
+        experience: [{
+            company: { type: String },
+            position: { type: String },
+            startDate: { type: Date },
+            endDate: { type: Date },
+            current: { type: Boolean, default: false },
+            description: { type: String }
+        }],
+        languages: [{
+            language: { type: String },
+            proficiency: {
+                type: String,
+                enum: ['Beginner', 'Intermediate', 'Advanced', 'Native']
+            }
+        }],
+        certifications: [{
+            name: { type: String },
+            issuer: { type: String },
+            date: { type: Date },
+            expiryDate: { type: Date },
+            credentialId: { type: String },
+            credentialUrl: { type: String }
+        }],
+        socialLinks: {
+            linkedin: { type: String, default: "" },
+            github: { type: String, default: "" },
+            portfolio: { type: String, default: "" },
+            twitter: { type: String, default: "" }
+        },
+        interests: [{ type: String }],
+        preferredJobTypes: [{
+            type: String,
+            enum: ['Full-time', 'Part-time', 'Contract', 'Internship', 'Remote']
+        }],
+        expectedSalary: {
+            amount: { type: Number },
+            currency: { type: String, default: "USD" }
         }
     },
     refreshToken: {
@@ -69,7 +122,9 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpiry: {
         type: Date,
     }
-})
+}, {
+    timestamps: true
+});
 
 // Pre-save hook to hash password
 userSchema.pre('save', async function (next) {
