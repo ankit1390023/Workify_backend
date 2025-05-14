@@ -89,6 +89,7 @@ const getJobsByAdmin = asyncHandler(async (req, res) => {
     return res.status(200).json(new apiResponse(200, jobs, "Jobs Retrieved Successfully"));
 });
 const updateJob = asyncHandler(async (req, res) => {
+    // console.log("heelo from update job", req.body);
     const jobId = req.params.id;
     const { title, description, requirements, salary, location, jobType, position, companyId, experience } = req.body;
 
@@ -116,22 +117,43 @@ const updateJob = asyncHandler(async (req, res) => {
     if (position) updateData.position = position;
     if (companyId) updateData.company = companyId;
 
+    console.log("updateData", updateData);
+
+
     const updatedJob = await Job.findByIdAndUpdate(
         jobId,
         { $set: updateData },
         { new: true }
     ).populate({ path: "company" });
-
+    console.log("updatedJob baya", updatedJob);
     if (!updatedJob) {
         throw new apiError(404, "Job not found");
     }
 
     return res.status(200).json(new apiResponse(200, updatedJob, "Job updated successfully"));
 });
+const deleteJob = asyncHandler(async (req, res) => {
+    const jobId = req.params.id;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+        throw new apiError(400, "Invalid Job ID");
+    }
+
+    const deletedJob = await Job.findByIdAndDelete(jobId);
+    if (!deletedJob) {
+        throw new apiError(404, "Job not found");
+    }
+
+    return res.status(200).json(new apiResponse(200, deletedJob, "Job deleted successfully"));
+});
+
+
 export {
     postJob,
     getAllJobs,
     getJobById,
     getJobsByAdmin,
-    updateJob
+    updateJob,
+    deleteJob
 };

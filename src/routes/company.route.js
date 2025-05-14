@@ -7,5 +7,5 @@ import { getCompany, getCompanyById, registerCompany, updateCompany } from '../c
 router.route('/register').post(verifyJWT, registerCompany);
 router.route('/get').get(verifyJWT, getCompany);
 router.route('/get/:id').get(verifyJWT, getCompanyById);
-router.route('/update/:id').post(verifyJWT, upload.fields([{ name: 'logo', maxCount: 1 }]), updateCompany);
+router.route('/update/:id').put(upload.fields([{ name: 'logo', maxCount: 1 }]), updateCompany);
 export default router;

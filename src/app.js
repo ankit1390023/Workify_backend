@@ -47,5 +47,4 @@ app.use('/api/v1/company', companyRouter);
 app.use('/api/v1/job', jobRouter);
 app.use('/api/v1/application', applicationRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
-
 export { app };
